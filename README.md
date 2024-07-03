@@ -12,7 +12,7 @@ gcc -shared -o lib_bdb.so add.o
 Make sure you rename the `database.h` file in test to `database.c` before compiling. You can then open a pull request and if your edits are accepted, we will update the main repo accordingly.
 
 ## PYTHON IMPLEMENTATION
-This code, when compiled as shown above, is meant to be a C-library for Python. The actuall implementation will be kept in a class within the main repo as `BDB_io.py`. Right now, as we are working on other edits. 
+This code, when compiled as shown above, is meant to be a C-library for Python. The actuall implementation will be kept in a class within the main repo as `BDB_io.py`. 
 
 The main reason for this edit is to minimize the requirements to only the bare encryption algorithms, which will be implemented using proper python libraries. 
 
