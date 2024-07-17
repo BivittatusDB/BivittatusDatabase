@@ -32,15 +32,6 @@ FILE* open_file(const char* filename, const char* mode){
     return file;
 }
 
-int DistToEnd(FILE* file) {
-    //get distance to end of the file
-    int current = ftell(file);
-    fseek(file, 0, SEEK_END);
-    int end=ftell(file);
-    fseek(file, current, SEEK_SET);
-    return (end-current);
-}
-
 void makedir(const char* dir_name){
     if (mkdir(dir_name) != False) { 
         perror("Couldn't make directory");

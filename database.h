@@ -52,9 +52,7 @@ char* ReadTable(const char* databasename, const char* tablename, bool Metadata){
             fclose(file);
             return buffer;
         } else {exit(1);}
-    }
-    //will never reach here... just so the compiler shuts up
-    return "...";
+    } else {exit(1);}
 }
 
 // D: Delete (Being written before update for simplicity)
