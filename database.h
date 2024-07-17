@@ -2,79 +2,76 @@
 
 //CRUD OPERATIONS FOR DATABASE
 // C: Create
-void CreateDataset(const char* basename, const char* setname, const char* data){
-    // Write table header
-    SetHeader node;
-    snprintf(node.tablename, sizeof(node.tablename), "%s", setname);
-    node.datasize = strlen(data);
+void CreateDatabase(const char* databasename){
+    makedir(databasename);
+}
 
-    // Make sure the dataset is not already created
-    assert(CheckDataSet(basename, setname)!=True);
+void CreateTable(const char* databasename, const char* tablename, const char* data){
+    if (CheckDataSet(catpath(databasename, tablename))==False){
+        SetHeader header;
+        snprintf(header.tablename, sizeof(header.tablename), "%s", tablename);
+        header.datasize=strlen(data);
 
-    // Write header and data to the file
-    FILE* database = open_file(basename, "ab");
-    fwrite(&node, sizeof(node), 1, database);
-    fwrite(data, 1, node.datasize, database);
-    fclose(database);
+        FILE* file = open_file(catpath(databasename, tablename), "wb");
+        fwrite(&header, HEADERSIZE, 1, file);
+        fwrite(data, 1, header.datasize, file);
+        fclose(file);
+    }
+}
+
+void AddMetaData(const char* databasename, const char* tablename, const char* metadata){
+    if (CheckDataSet(catpath(databasename, tablename))==True){
+        SetHeader MetaHeader;
+        snprintf(MetaHeader.tablename, sizeof(MetaHeader.tablename), "meta_%s", tablename);
+        MetaHeader.datasize=strlen(metadata);
+
+        FILE* file = open_file(catpath(databasename, tablename), "ab");
+        fwrite(&MetaHeader, HEADERSIZE, 1, file);
+        fwrite(metadata, 1, MetaHeader.datasize, file);
+        fclose(file);
+    }
 }
 
 // R: Read
-char* ReadData(FILE* database, int datasize){
-    // read data contents of the dataset after set header
-    char* buffer = (char*)calloc(datasize+1, sizeof(char));
-    fread(buffer,1,datasize, database);
-    return buffer;
+char* ReadTable(const char* databasename, const char* tablename, bool Metadata){
+    if (CheckDataSet(catpath(databasename, tablename))==True){
+        FILE* file = open_file(catpath(databasename, tablename), "rb");
+        SetHeader Header;
+        if (fread(&Header, HEADERSIZE, 1, file) == True){
+            char* buffer = (char*)calloc(Header.datasize+1, sizeof(char));
+            fread(buffer, 1, Header.datasize, file);
+            if (Metadata==False){
+                fclose(file);
+                return buffer;
+            }
+        } else {exit(1);}
+        SetHeader MetaHeader;
+        if (fread(&MetaHeader, HEADERSIZE, 1, file)==True){
+            char* buffer = (char*)calloc(MetaHeader.datasize+1, sizeof(char));
+            fread(buffer, 1, MetaHeader.datasize, file);
+            fclose(file);
+            return buffer;
+        } else {exit(1);}
+    }
+    //will never reach here... just so the compiler shuts up
+    return "...";
 }
 
-char* GetData(const char* basename, const char* setname){
-    //find header and then read data after it
-    assert(CheckDataSet(basename, setname)!=True); //I think this should be == and not !=?
-    FILE* database = open_file(basename, "rb");
-    SetHeader node = LoadSet(database);
-    while (strcmp(node.tablename, setname)!=0){
-        fseek(database, node.datasize, SEEK_CUR);
-        node=LoadSet(database);
+// D: Delete (Being written before update for simplicity)
+void DeleteTable(const char* databasename, const char* tablename){
+    char* path = catpath(databasename, tablename);
+    if (CheckDataSet(path) == True){
+        if (remove(path) != 0){
+            perror("Couldn't delete table");
+            exit(1);
+        }
     }
-    char* buffer = ReadData(database, node.datasize);
-    return buffer;
-}
-
-// D: Delete (Being written before update for simplicity
-void DeleteSet(const char* basename, const char* setname){
-    //Find the placement of the requested node, mode all nodes after it up, and truncate the file
-    assert(CheckDataSet(basename, setname)!=True);
-    FILE* database=open_file(basename, "rb+");
-    SetHeader node = LoadSet(database); 
-    
-    //find set placement
-    while (strcmp(node.tablename, setname) != 0){
-        fseek(database, node.datasize, SEEK_CUR);
-        node = LoadSet(database);
-    }
-    fseek(database, node.datasize, SEEK_CUR);
-    int offset = HEADERSIZE+node.datasize; //offset to move back and forth and overwrite data
-    
-    do {
-        //do while loop ensures the last set it still moved even if it's size is shorter than offset
-        node=LoadSet(database);
-        char* data=ReadData(database, node.datasize);
-        int extra = HEADERSIZE + node.datasize;
-        fseek(database, -1*(offset+extra), SEEK_CUR);
-        fwrite(&node, sizeof(node), 1, database);
-        fwrite(data, 1, node.datasize, database);
-        fseek(database, offset, SEEK_CUR);
-    } while (DistToEnd(database) > offset);
-    
-    //truncate the extra data
-    fseek(database, -offset, SEEK_CUR);
-    ftruncate(fileno(database), ftell(database));
-    fclose(database);
 }
 
 // U: Update
-void UpdateData(const char* basename, const char* setname, const char* data){
-    // Update by deleting the old and replacing it with something new... I know stupid... but it works
-
-    DeleteSet(basename, setname);
-    CreateDataset(basename, setname, data);
+void UpdateTable(const char* databasename, const char* tablename, const char* data){
+    char* metadata=ReadTable(databasename, tablename, True);
+    DeleteTable(databasename, tablename);
+    CreateTable(databasename, tablename, data);
+    AddMetaData(databasename, tablename, metadata);
 }

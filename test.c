@@ -1,13 +1,31 @@
 //After any rewriting, this code should still be able to run, as it tests all ma
-// Make sure there is no file "Hello" left from previous attempts or there will be assertion errors
+// Make sure there is no directory "Hello" left from previous attempts or there will be assertion errors
 #include "database.h"
+#include <string.h>
 
-int main(){
-    CreateDataset("Hello", "Table1", "testing");
-    CreateDataset("Hello", "table2", "testing again");
-    CreateDataset("Hello", "table3.00", "Hello World longer this time");
-    UpdateData("Hello", "table2", "testing updated");
-    char* buffer = GetData("Hello", "table2");
-    printf("%s", buffer);
-    return False;
+int main() {
+    CreateDatabase("Hello");
+
+    CreateTable("Hello", TESTNAME, "Hello World");
+    bool check = CheckDataSet(catpath("Hello", TESTNAME));
+    printf("Test table 1 exists: %d\n", check);
+
+    CreateTable("Hello", "hello_world", "check");
+    check = CheckDataSet(catpath("Hello", "hello_world"));
+    printf("Test table 2 exists: %d\n", check);
+
+    AddMetaData("Hello", "hello_world", "working...");
+    char* data=ReadTable("Hello", "hello_world", False);
+    char* metadata=ReadTable("Hello", "hello_world", True);
+    printf("%s: %s\n", data, metadata);
+
+    DeleteTable("Hello", TESTNAME);
+    check = CheckDataSet(catpath("Hello", TESTNAME));
+    printf("Error in file deletion: %s\n", check);
+
+    UpdateTable("Hello", "hello_world", "new check");
+    data=ReadTable("Hello", "hello_world", False);
+    metadata=ReadTable("Hello", "hello_world", True);
+    printf("%s: %s\n", data, metadata);
+    return 0;
 }

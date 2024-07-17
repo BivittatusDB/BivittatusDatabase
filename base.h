@@ -1,19 +1,13 @@
 // Include packages
 #include <stdio.h> 
 #include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-
-#ifdef _WIN32 // Define Windows behavior:
-    #include <io.h>
-    #define ftruncate _chsize
-#else // Define Unix Behavior: 
-    #include <unistd.h>
-#endif
+#include <sys/stat.h>
 
 // Code Based Constants
-#define MAXFILENAME _MAX_FNAME
+#define MAXFILENAME _MAX_FNAME //should be about 256 for most systems
 #define TESTNAME "test.db" //use for testing this code
+#define PATHSIZE ((MAXFILENAME*2)+1)
+char fullpath[PATHSIZE];
 
 #define bool int // Bools since they aren't built-in
 #define False 0
@@ -26,7 +20,6 @@ typedef struct {
 } SetHeader;
 
 #define HEADERSIZE sizeof(SetHeader)
-
 
 // Other useful functions
 FILE* open_file(const char* filename, const char* mode){
@@ -48,31 +41,23 @@ int DistToEnd(FILE* file) {
     return (end-current);
 }
 
-SetHeader LoadSet(FILE* file){
-    //load a set from a file at current position
-    SetHeader node;
-    if (feof(file)){
-        //if end of file, return empty header
-        node.datasize=False;
-        return node;
+void makedir(const char* dir_name){
+    if (mkdir(dir_name) != False) { 
+        perror("Couldn't make directory");
+        exit(1);
     }
-    if (fread(&node, sizeof(SetHeader), 1, file) == True){
-        // If another header is found, return it
-        return node;
-    }
-    //if fread fails, return empty header
-    node.datasize=False;
-    return node;
 }
 
-bool CheckDataSet(const char* basename, const char* setname){
-    FILE* database = open_file(basename, "ab");
-    SetHeader node = LoadSet(database); //get a header
-    while (node.datasize != 0) { //while no error and not end of file
-        if (strcmp(node.tablename, setname)==0){
-            return True; //return true if the set names match (e.g. set in database)
-        }
-        node=LoadSet(database); // try again if not
+char* catpath(const char* subdir, const char* file){
+    sprintf(fullpath, "%s/%s", subdir, file);
+    return fullpath;
+}
+
+bool CheckDataSet(const char* tablename){
+    struct stat buffer;
+    if (stat(tablename, &buffer)==0){
+        return True;
+    } else {
+        return False;
     }
-    return False; //return false if error or end of file
 }
