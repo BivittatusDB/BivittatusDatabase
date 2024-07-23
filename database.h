@@ -73,3 +73,10 @@ void UpdateTable(const char* databasename, const char* tablename, const char* da
     CreateTable(databasename, tablename, data);
     AddMetaData(databasename, tablename, metadata);
 }
+
+void UpdateMetaTable(const char* databasename, const char* tablename, const char* metadata){
+    char* data=ReadTable(databasename, tablename, False);
+    DeleteTable(databasename, tablename);
+    CreateTable(databasename, tablename, data);
+    AddMetaData(databasename, tablename, metadata);
+}
