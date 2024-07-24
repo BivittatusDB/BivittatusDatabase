@@ -1,4 +1,5 @@
 #include "base.h"
+#include <string.h>
 
 //CRUD OPERATIONS FOR DATABASE
 // C: Create
