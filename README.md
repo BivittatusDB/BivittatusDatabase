@@ -6,10 +6,12 @@ This code is available in order to keep our DBMS as open source, and allow other
 
 After making your edits, please compile the code with the commands below:
 ```bash
-gcc -c -Wall -Werror -fpic database.c
-gcc -shared -o lib_bdb.so database.o
+make && make clean
 ```
-Make sure you rename the `database.h` file in test to `database.c` before compiling. You can then open a pull request and if your edits are accepted, we will update the main repo accordingly.
+Note, windows machines may encounter some issue compiling due to the use bash commands in the renaming and cleaning segements. To fix this run the command below:
+```bash
+make win && make winclean
+```
 
 ## PYTHON IMPLEMENTATION
 This code, when compiled as shown above, is meant to be a C-library for Python. The actual implementation will be kept in a class within the main repo as `BDB_io.py`. 
