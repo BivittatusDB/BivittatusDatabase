@@ -4,30 +4,31 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 int main() {
     CreateDatabase("Hello");
 
     CreateTable("Hello", TESTNAME, "Hello World");
-    int check = CheckDataSet(catpath("Hello", TESTNAME));
-    printf("Test table 1 exists: %d\n", check);
+    bool check = CheckDataSet(catpath("Hello", TESTNAME));
+    printf("Test table 1 exists: %s\n", check ? "True" : "False");
 
     CreateTable("Hello", "hello_world", "check");
     check = CheckDataSet(catpath("Hello", "hello_world"));
-    printf("Test table 2 exists: %d\n", check);
+    printf("Test table 2 exists: %s\n", check ? "True" : "False");
 
     AddMetaData("Hello", "hello_world", "working...");
-    char* data = ReadTable("Hello", "hello_world", 0); //False
-    char* metadata = ReadTable("Hello", "hello_world", 1); //True
+    char* data = ReadTable("Hello", "hello_world", false);
+    char* metadata = ReadTable("Hello", "hello_world", true);
     printf("%s: %s\n", data, metadata);
 
     DeleteTable("Hello", TESTNAME);
     check = CheckDataSet(catpath("Hello", TESTNAME));
-    printf("Error in file deletion: %d\n", check);
+    printf("Result of the elimination from the table: %s\n", check ? "False" : "Success");
 
     UpdateTable("Hello", "hello_world", "new check");
-    data = ReadTable("Hello", "hello_world", 0); //False
-    metadata = ReadTable("Hello", "hello_world", 1); //True
+    data = ReadTable("Hello", "hello_world", false);
+    metadata = ReadTable("Hello", "hello_world", true);
     printf("%s: %s\n", data, metadata);
 
     //Free memory

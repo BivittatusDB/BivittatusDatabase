@@ -1,16 +1,17 @@
 #include "base.h"
 #include <string.h>
-// 1 = true / 0 = False
+#include <stdbool.h>
+
 // CRUD OPERATIONS FOR DATABASE
 // C: Create
 void CreateDatabase(const char* databasename){
-      // Create a directory with the name of the database
+    // Create a directory with the name of the database
     makedir(databasename);
 }
 
 void CreateTable(const char* databasename, const char* tablename, const char* data){
     // If the table does not exist, create a new table in the database.
-    if (CheckDataSet(catpath(databasename, tablename))==0){
+    if (CheckDataSet(catpath(databasename, tablename))==false){
         // Prepare the table header
         SetHeader header;
         snprintf(header.tablename, sizeof(header.tablename), "%s", tablename);
@@ -26,7 +27,7 @@ void CreateTable(const char* databasename, const char* tablename, const char* da
 
 void AddMetaData(const char* databasename, const char* tablename, const char* metadata){
     // If the table exists, add metadata to the table
-    if (CheckDataSet(catpath(databasename, tablename))==1){
+    if (CheckDataSet(catpath(databasename, tablename))==true){
         // Prepare the metadata header
         SetHeader MetaHeader;
         snprintf(MetaHeader.tablename, sizeof(MetaHeader.tablename), "meta_%s", tablename);
@@ -41,15 +42,15 @@ void AddMetaData(const char* databasename, const char* tablename, const char* me
 }
 
 // R: Read
-char* ReadTable(const char* databasename, const char* tablename, int Metadata){
+char* ReadTable(const char* databasename, const char* tablename, bool Metadata){
     // If the table exists, reads the data or metadata from the table.
-    if (CheckDataSet(catpath(databasename, tablename))==1){
+    if (CheckDataSet(catpath(databasename, tablename))==true){
         FILE* file = open_file(catpath(databasename, tablename), "rb");
         SetHeader Header;
         if (fread(&Header, HEADERSIZE, 1, file) == 1){
             char* buffer = (char*)calloc(Header.datasize+1, sizeof(char));
             fread(buffer, 1, Header.datasize, file);
-            if (Metadata==0){
+            if (Metadata==false){
                 fclose(file);
                 return buffer;
             }
@@ -68,9 +69,9 @@ char* ReadTable(const char* databasename, const char* tablename, int Metadata){
 void DeleteTable(const char* databasename, const char* tablename){
     // If the table exists, delete the table
     char* path = catpath(databasename, tablename);
-    if (CheckDataSet(path) == 1){
+    if (CheckDataSet(path) == true){
         if (remove(path) != 0){
-            perror("No se pudo borrar la tabla");
+            perror("Could not delete the table");
             exit(EXIT_FAILURE);
         }
     }
@@ -78,20 +79,17 @@ void DeleteTable(const char* databasename, const char* tablename){
 
 // U: Update
 void UpdateTable(const char* databasename, const char* tablename, const char* data){
-        /*Reads the metadata from the table, deletes the table,
-        creates a new table with the new data and adds the metadata*/ 
-    char* metadata=ReadTable(databasename, tablename, 1);
+    /*Reads the metadata from the table, deletes the table,
+    creates a new table with the new data and adds the metadata*/ 
+    char* metadata=ReadTable(databasename, tablename, true);
     DeleteTable(databasename, tablename);
     CreateTable(databasename, tablename, data);
     AddMetaData(databasename, tablename, metadata);
 }
-<<<<<<< Updated upstream
 
 void UpdateMetaTable(const char* databasename, const char* tablename, const char* metadata){
-    char* data=ReadTable(databasename, tablename, False);
+    char* data=ReadTable(databasename, tablename, false);
     DeleteTable(databasename, tablename);
     CreateTable(databasename, tablename, data);
     AddMetaData(databasename, tablename, metadata);
 }
-=======
->>>>>>> Stashed changes

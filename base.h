@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <stdbool.h>
 
 #ifdef _WIN32
 #include <direct.h> // for mkdir on Windows
@@ -55,20 +56,19 @@ char* catpath(const char* subdir, const char* file){
     return fullpath;
 }
 
-int CheckDataSet(const char* tablename){
+bool CheckDataSet(const char* tablename){
     struct stat buffer;
     int result = stat(tablename, &buffer);
     if (result == 0){
-        return 0; // Success
+        return true; // Success
     } else {
         switch(errno) {
             case ENOENT:
-                return 1; // File does not exist
+                return false; // File does not exist
             case EACCES:
-                return 2; // Permission denied.
+                return false; // Permission denied
             default:
-                return -1; // Unknown error
+                return false; // Unknown error
         }
     }
 }
-
