@@ -12,7 +12,7 @@
 #endif
 
 // Code Based Constants
-#define MAXFILENAME _MAX_FNAME //should be about 256 for most systems
+#define MAXFILENAME 256 //should be about 256 for most systems
 #define TESTNAME "test.db" //use for testing this code
 #define PATHSIZE ((MAXFILENAME*2)+1)
 
@@ -40,7 +40,7 @@ void makedir(const char* dir_name){
 
     if (stat(dir_name, &st) == -1) {
         // The directory does not exist, so try to create it
-        if (mkdir(dir_name) != 0) { 
+        if (mkdir(dir_name, 0755) != 0) { 
             perror("Couldn't make directory");
             exit(EXIT_FAILURE);
         }
