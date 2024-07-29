@@ -12,7 +12,7 @@
 #endif
 
 // Code Based Constants
-#define MAXFILENAME 256 //should be about 256 for most systems
+#define MAXFILENAME _MAX_FNAME //should be about 256 for most systems
 #define TESTNAME "test.db" //use for testing this code
 #define PATHSIZE ((MAXFILENAME*2)+1)
 
@@ -58,17 +58,9 @@ char* catpath(const char* subdir, const char* file){
 
 bool CheckDataSet(const char* tablename){
     struct stat buffer;
-    int result = stat(tablename, &buffer);
-    if (result == 0){
+    if (stat(tablename, &buffer) == 0){
         return true; // Success
     } else {
-        switch(errno) {
-            case ENOENT:
-                return false; // File does not exist
-            case EACCES:
-                return false; // Permission denied
-            default:
-                return false; // Unknown error
-        }
+        return false;
     }
 }
