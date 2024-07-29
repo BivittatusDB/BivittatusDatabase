@@ -40,10 +40,17 @@ void makedir(const char* dir_name){
 
     if (stat(dir_name, &st) == -1) {
         // The directory does not exist, so try to create it
-        if (mkdir(dir_name, 0755) != 0) { 
-            perror("Couldn't make directory");
-            exit(EXIT_FAILURE);
-        }
+        #ifdef _WIN32
+            if (mkdir(dir_name) != 0) { 
+                perror("Couldn't make directory");
+                exit(EXIT_FAILURE);
+            }
+        #else
+            if (mkdir(dir_name, 0755) != 0) { 
+                perror("Couldn't make directory");
+                exit(EXIT_FAILURE);
+            }
+        #endif
     }
 }
 
