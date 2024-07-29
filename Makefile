@@ -32,4 +32,4 @@ clean:
 	rm -f $(OBJ)
 
 winclean:
-	-del /f $(OBJ) $(TARGET) $(SRC)
+	-del /f $(OBJ)
