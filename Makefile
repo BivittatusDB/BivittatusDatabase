@@ -27,7 +27,7 @@ compile: $(SRC)
 	$(CC) $(CFLAGS) $(SRC)
 
 link: $(OBJ)
-	$(CC) $(SHARED) $(TARGET) $(OBJ)
+	$(CC) $(SHARED) $(ELF_TARGET) $(OBJ)
 
 win_link: $(OBJ)
 	$(CC) $(SHARED) $(WIN_TARGET) $(OBJ)
