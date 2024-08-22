@@ -1,4 +1,3 @@
-// Include packages
 #include <stdio.h> 
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -8,12 +7,11 @@
 #ifdef _WIN32
 #include <direct.h> // for mkdir on Windows
 #else
-#include <sys/types.h> // for mkdir on Unix-like
+#include <sys/types.h> // for mkdir on Unix-like systems
 #endif
 
-// Code Based Constants
-#define MAXFILENAME 256 //should be about 256 for most systems
-#define TESTNAME "test.db" //use for testing this code
+#define MAXFILENAME 256 // should be about 256 for most systems
+#define TESTNAME "test.db" // use for testing this code
 #define PATHSIZE ((MAXFILENAME*2)+1)
 
 // Database Struct
@@ -26,7 +24,7 @@ typedef struct {
 
 // Other useful functions
 FILE* open_file(const char* filename, const char* mode){
-    //open file with error handling
+    // open file with error handling
     FILE* file = fopen(filename, mode);
     if (!file) {
         fprintf(stderr, "Error opening file: %s\n", filename);
