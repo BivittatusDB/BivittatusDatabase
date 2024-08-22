@@ -34,9 +34,10 @@ FILE* open_file(const char* filename, const char* mode){
 }
 
 void makedir(const char* dir_name){
-    struct stat st = {0};
+    struct stat st;
 
-    if (stat(dir_name, &st) == -1) {
+    // Check if the directory exists
+    if (stat(dir_name, &st) != 0) {
         // The directory does not exist, so try to create it
         #ifdef _WIN32
             if (_mkdir(dir_name) != 0) {
