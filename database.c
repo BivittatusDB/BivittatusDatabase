@@ -136,10 +136,11 @@ void DeleteTable(const char* databasename, const char* tablename){
 void UpdateTable(const char* databasename, const char* tablename, const char* data){
     /*Reads the metadata from the table, deletes the table,
     creates a new table with the new data and adds the metadata*/ 
-    char* metadata=ReadTable(databasename, tablename, true);
+    char* metadata = ReadTable(databasename, tablename, true);
     DeleteTable(databasename, tablename);
     CreateTable(databasename, tablename, data);
     AddMetaData(databasename, tablename, metadata);
+    free(metadata); // Free the memory allocated to metadata
 }
 
 void UpdateMetaTable(const char* databasename, const char* tablename, const char* metadata){
