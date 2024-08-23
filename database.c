@@ -123,12 +123,10 @@ char* ReadTable(const char* databasename, const char* tablename, bool Metadata){
 // D: Delete (Being written before update for simplicity)
 void DeleteTable(const char* databasename, const char* tablename){
     // If the table exists, delete the table
-    char* path = catpath(databasename, tablename);
-    if (CheckDataSet(path) == true){
-        if (remove(path) != 0){
-            perror("Could not delete the table");
-            exit(EXIT_FAILURE);
-        }
+    const char* path = catpath(databasename, tablename);
+    if (CheckDataSet(path) && remove(path) != 0){
+        perror("Could not delete the table");
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -144,8 +142,9 @@ void UpdateTable(const char* databasename, const char* tablename, const char* da
 }
 
 void UpdateMetaTable(const char* databasename, const char* tablename, const char* metadata){
-    char* data=ReadTable(databasename, tablename, false);
+    const char* data = ReadTable(databasename, tablename, false);
     DeleteTable(databasename, tablename);
     CreateTable(databasename, tablename, data);
     AddMetaData(databasename, tablename, metadata);
+    free((void*)data); // Release the memory allocated to data
 }

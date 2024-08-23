@@ -47,7 +47,7 @@ void makedir(const char* dir_name) {
                 exit(EXIT_FAILURE);
             }
         #else
-            if (mkdir(dir_name, 0755) != 0) {
+            if (mkdir(dir_name, 0750) != 0) {
                 perror("Could not create directory");
                 exit(EXIT_FAILURE);
             }
