@@ -142,7 +142,7 @@ void UpdateTable(const char* databasename, const char* tablename, const char* da
 }
 
 void UpdateMetaTable(const char* databasename, const char* tablename, const char* metadata){
-    const char* data = ReadTable(databasename, tablename, false);
+    char* data = ReadTable(databasename, tablename, false);
     DeleteTable(databasename, tablename);
     CreateTable(databasename, tablename, data);
     AddMetaData(databasename, tablename, metadata);
