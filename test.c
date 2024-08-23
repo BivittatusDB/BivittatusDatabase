@@ -1,10 +1,10 @@
 //After any rewriting, this code should still be able to run, as it tests all ma
 // Make sure there is no directory "Hello" left from previous attempts or there will be assertion errors (FIXED?)
-#include "database.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "base.h"
 
 int main() {
     CreateDatabase("Hello");

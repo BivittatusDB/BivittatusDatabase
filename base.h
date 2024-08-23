@@ -23,53 +23,53 @@ typedef struct {
 #define HEADERSIZE sizeof(SetHeader)
 
 // Other useful functions
-FILE* open_file(const char* filename, const char* mode){
-    // open file with error handling
+FILE* open_file(const char* filename, const char* mode) {
     FILE* file = fopen(filename, mode);
     if (!file) {
-        fprintf(stderr, "Error opening file: %s\n", filename);
+        fprintf(stderr, "Error al abrir el archivo: %s\n", filename);
         exit(EXIT_FAILURE);
     }
     return file;
 }
 
-void makedir(const char* dir_name){
+void makedir(const char* dir_name) {
     struct stat st;
 
     // Check if the directory exists
-    if (stat(dir_name, &st) != 0) {
-        // The directory does not exist, so try to create it
+    if (stat(dir_name, &st) == 0) {
+        // Directory exists
+        printf("Directory already exists: %s\n", dir_name);
+    } else if (errno == ENOENT) {
+        // Directory does not exist, try to create it
         #ifdef _WIN32
             if (_mkdir(dir_name) != 0) {
-                if (errno != EEXIST) {
-                    perror("Couldn't make directory");
-                    exit(EXIT_FAILURE);
-                }
+                perror("Could not create directory");
+                exit(EXIT_FAILURE);
             }
         #else
             if (mkdir(dir_name, 0755) != 0) {
-                if (errno != EEXIST) {
-                    perror("Couldn't make directory");
-                    exit(EXIT_FAILURE);
-                }
+                perror("Could not create directory");
+                exit(EXIT_FAILURE);
             }
         #endif
-    } else if (!S_ISDIR(st.st_mode)) {
-        fprintf(stderr, "Path exists but is not a directory: %s\n", dir_name);
+        printf("Directory created: %s\n", dir_name);
+    } else {
+        // Some other error occurred
+        perror("Error checking directory");
         exit(EXIT_FAILURE);
     }
 }
 
-char* catpath(const char* subdir, const char* file){
+char* catpath(const char* subdir, const char* file) {
     static char fullpath[PATHSIZE];
     if (snprintf(fullpath, PATHSIZE, "%s/%s", subdir, file) >= PATHSIZE) {
-        fprintf(stderr, "Error concatenating path and file name.\n");
+        fprintf(stderr, "Error concatenating path and filename.\n");
         exit(EXIT_FAILURE);
     }
     return fullpath;
 }
 
-bool CheckDataSet(const char* tablename){
+bool CheckDataSet(const char* tablename) {
     FILE* file = fopen(tablename, "r");
     if (file) {
         fclose(file);
