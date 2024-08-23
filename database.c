@@ -146,5 +146,5 @@ void UpdateMetaTable(const char* databasename, const char* tablename, const char
     DeleteTable(databasename, tablename);
     CreateTable(databasename, tablename, data);
     AddMetaData(databasename, tablename, metadata);
-    free((void*)data); // Convierte const char* a void*
+    free(data); // Release the memory allocated to data
 }
