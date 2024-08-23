@@ -26,7 +26,7 @@ typedef struct {
 FILE* open_file(const char* filename, const char* mode) {
     FILE* file = fopen(filename, mode);
     if (!file) {
-        fprintf(stderr, "Error al abrir el archivo: %s\n", filename);
+        fprintf(stderr, "Error opening the file: %s\n", filename);
         exit(EXIT_FAILURE);
     }
     return file;
