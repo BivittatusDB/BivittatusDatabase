@@ -15,7 +15,7 @@ void CreateTable(const char* databasename, const char* tablename, const char* da
         // Prepare the table header
         SetHeader header;
         snprintf(header.tablename, sizeof(header.tablename), "%s", tablename);
-        header.datasize=strlen_s(data);
+        header.datasize=strnlen(data, sizeof(header.datasize));
 
         // Open the table file and write the header and the data
         FILE* file = open_file(catpath(databasename, tablename), "wb");
@@ -31,7 +31,7 @@ void AddMetaData(const char* databasename, const char* tablename, const char* me
         // Prepare the metadata header
         SetHeader MetaHeader;
         snprintf(MetaHeader.tablename, sizeof(MetaHeader.tablename), "meta_%s", tablename);
-        MetaHeader.datasize=strlen_s(metadata);
+        MetaHeader.datasize=strnlen(metadata, sizeof(MetaHeader.datasize));
 
         // Open the table file and write the metadata header and the metadata
         FILE* file = open_file(catpath(databasename, tablename), "ab");
@@ -146,5 +146,5 @@ void UpdateMetaTable(const char* databasename, const char* tablename, const char
     DeleteTable(databasename, tablename);
     CreateTable(databasename, tablename, data);
     AddMetaData(databasename, tablename, metadata);
-    free(data); // Release the memory allocated to data
+    free((void*)data); // Convierte const char* a void*
 }
