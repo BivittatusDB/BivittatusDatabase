@@ -33,31 +33,25 @@ FILE* open_file(const char* filename, const char* mode) {
 }
 
 void makedir(const char* dir_name) {
-    struct stat st;
-
-    // Check if the directory exists
-    if (stat(dir_name, &st) == 0) {
-        // Directory exists
-        printf("Directory already exists: %s\n", dir_name);
-    } else if (errno == ENOENT) {
-        // Directory does not exist, try to create it
-        #ifdef _WIN32
-            if (_mkdir(dir_name) != 0) {
+    #ifdef _WIN32
+        if (_mkdir(dir_name) != 0) {
+            if (errno == EEXIST) {
+                printf("Directory already exists: %s\n", dir_name);
+            } else {
                 perror("Could not create directory");
                 exit(EXIT_FAILURE);
             }
-        #else
-            if (mkdir(dir_name, 0750) != 0) {
+        }
+    #else
+        if (mkdir(dir_name, 0750) != 0) {
+            if (errno == EEXIST) {
+                printf("Directory already exists: %s\n", dir_name);
+            } else {
                 perror("Could not create directory");
                 exit(EXIT_FAILURE);
             }
-        #endif
-        printf("Directory created: %s\n", dir_name);
-    } else {
-        // Some other error occurred
-        perror("Error checking directory");
-        exit(EXIT_FAILURE);
-    }
+        }
+    #endif
 }
 
 char* catpath(const char* subdir, const char* file) {
