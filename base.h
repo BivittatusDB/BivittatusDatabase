@@ -72,3 +72,11 @@ bool CheckDataSet(const char* tablename) {
         return false;
     }
 }
+
+size_t str_len(const char *str) {
+    const char *start = str;           // Save start address
+    while (*str != '\0') {
+        str++;                         // loop through characters until teminator is found
+    }
+    return str - start;                // return the difference in memory address for length
+}
