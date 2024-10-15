@@ -5,7 +5,7 @@
 CC = gcc
 CFLAGS = -c -Wall -Werror -fpic
 SHARED = -shared -o
-WIN_TARGET = lib_bdb_win32.dll
+WIN_TARGET = lib_bdb_win64.dll
 ELF_TARGET = lib_bdb_elf.so
 OBJ = database.o
 SRC = database.c
