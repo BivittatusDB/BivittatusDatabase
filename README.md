@@ -17,6 +17,3 @@ make win && make winclean
 This code, when compiled as shown above, is meant to be a C-library for Python. The actual implementation will be kept in a class within the main repo as `BDB_io.py`. 
 
 The main reason for this edit is to minimize the requirements to only the bare encryption algorithms, which will be implemented using proper python libraries. 
-
-## KNOWN ISSUES
-Right now the `CheckDataSet` function in `base.h` is always returning `False` even when the dataset is present. Effectively, it is just there for show, but it will need to be edited to work in order to ensure proper error handling in the python implementation. [**FIXED 7/17/24**]

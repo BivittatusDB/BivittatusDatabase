@@ -3,12 +3,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <stdbool.h>
-
-#ifdef _WIN32
-#include <direct.h> // for mkdir on Windows
-#else
-#include <sys/types.h> // for mkdir on Unix-like systems
-#endif
+#include "bdb_encrypt/FileEncrypter.h"
 
 #define MAXFILENAME 256 // should be about 256 for most systems
 #define TESTNAME "test.db" // use for testing this code
@@ -23,8 +18,16 @@ typedef struct {
 #define HEADERSIZE sizeof(SetHeader)
 
 // Other useful functions
-FILE* open_file(const char* filename, const char* mode) {
-    FILE* file = fopen(filename, mode);
+FILE* open_file(PATH dir, const char* filename, const char* mode) {
+    //decrypt the file
+    KEY privkey=load_privkey(dir);
+    if (decrypt_file(dir, filename, privkey) !=0){
+        fprintf(stderr, "Error decrypting the file: %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+    //open the file
+    PATH filepath = catpath(catpath(dir, "/"), filename);
+    FILE* file = fopen(filepath, mode);
     if (!file) {
         fprintf(stderr, "Error opening the file: %s\n", filename);
         exit(EXIT_FAILURE);
@@ -32,35 +35,13 @@ FILE* open_file(const char* filename, const char* mode) {
     return file;
 }
 
-void makedir(const char* dir_name) {
-    #ifdef _WIN32
-        if (_mkdir(dir_name) != 0) {
-            if (errno == EEXIST) {
-                printf("Directory already exists: %s\n", dir_name);
-            } else {
-                perror("Could not create directory");
-                exit(EXIT_FAILURE);
-            }
-        }
-    #else
-        if (mkdir(dir_name, 0750) != 0) {
-            if (errno == EEXIST) {
-                printf("Directory already exists: %s\n", dir_name);
-            } else {
-                perror("Could not create directory");
-                exit(EXIT_FAILURE);
-            }
-        }
-    #endif
-}
-
-char* catpath(const char* subdir, const char* file) {
-    static char fullpath[PATHSIZE];
-    if (snprintf(fullpath, PATHSIZE, "%s/%s", subdir, file) >= PATHSIZE) {
-        fprintf(stderr, "Error concatenating path and filename.\n");
+int close_file(PATH dir, const char* filename, FILE *file){
+    fclose(file);
+    KEY privkey = load_privkey(dir);
+    if (encrypt_file(catpath(dir, "/"), filename, privkey)){
+        fprintf(stderr, "Error encrypting the file: %s\n", filename);
         exit(EXIT_FAILURE);
     }
-    return fullpath;
 }
 
 bool CheckDataSet(const char* tablename) {

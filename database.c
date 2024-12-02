@@ -4,12 +4,15 @@
 
 // CRUD OPERATIONS FOR DATABASE
 // C: Create
-void CreateDatabase(const char* databasename){
-    // Create a directory with the name of the database
+void CreateDatabase(PATH databasename){
+    // Create a directory with the name of the database, and generate keys (PUB, PRIV, and SYM)
     makedir(databasename);
+    gen_keys(databasename);
+    KEY pub = load_pubkey(databasename);
+    ensure_shared_key(pub, databasename);
 }
 
-void CreateTable(const char* databasename, const char* tablename, const char* data){
+void CreateTable(PATH databasename, const char* tablename, const char* data){
     // If the table does not exist, create a new table in the database.
     if (CheckDataSet(catpath(databasename, tablename))==false){
         // Prepare the table header
@@ -18,14 +21,14 @@ void CreateTable(const char* databasename, const char* tablename, const char* da
         header.datasize=str_len(data);
 
         // Open the table file and write the header and the data
-        FILE* file = open_file(catpath(databasename, tablename), "wb");
+        FILE* file = open_file(databasename, tablename, "wb");
         fwrite(&header, HEADERSIZE, 1, file);
         fwrite(data, 1, header.datasize, file);
-        fclose(file);
+        close_file(databasename,tablename, file);
     }
 }
 
-void AddMetaData(const char* databasename, const char* tablename, const char* metadata){
+void AddMetaData(PATH databasename, const char* tablename, const char* metadata){
     // If the table exists, add metadata to the table
     if (CheckDataSet(catpath(databasename, tablename))==true){
         // Prepare the metadata header
@@ -34,18 +37,18 @@ void AddMetaData(const char* databasename, const char* tablename, const char* me
         MetaHeader.datasize=str_len(metadata);
 
         // Open the table file and write the metadata header and the metadata
-        FILE* file = open_file(catpath(databasename, tablename), "ab");
+        FILE* file = open_file(databasename, tablename, "ab");
         fwrite(&MetaHeader, HEADERSIZE, 1, file);
         fwrite(metadata, 1, MetaHeader.datasize, file);
-        fclose(file);
+        close_file(databasename, tablename, file);
     }
 }
 
 // R: Read
-char* ReadTable(const char* databasename, const char* tablename, bool Metadata){
+char* ReadTable(PATH databasename, const char* tablename, bool Metadata){
     // If the table exists, reads the data or metadata from the table.
     if (CheckDataSet(catpath(databasename, tablename))==true){
-        FILE* file = open_file(catpath(databasename, tablename), "rb");
+        FILE* file = open_file(databasename, tablename, "rb");
         if (file == NULL) {
             perror("Error opening file");
             return NULL;
@@ -53,33 +56,33 @@ char* ReadTable(const char* databasename, const char* tablename, bool Metadata){
 
         SetHeader Header;
         if (fread(&Header, HEADERSIZE, 1, file) != 1) {
-            fclose(file);
+            close_file(databasename, tablename, file);
             perror("Error reading header");
             return NULL;
         }
 
         if (Header.datasize <= 0) {
-            fclose(file);
+            close_file(databasename, tablename, file);
             perror("Invalid data size");
             return NULL;
         }
 
         char* buffer = (char*)calloc(Header.datasize+1, sizeof(char));
         if (buffer == NULL) {
-            fclose(file);
+            close_file(databasename, tablename, file);
             perror("Memory allocation failed");
             return NULL;
         }
 
         if (fread(buffer, 1, Header.datasize, file) != Header.datasize) {
             free(buffer);
-            fclose(file);
+            close_file(databasename, tablename, file);
             perror("Error reading data");
             return NULL;
         }
 
         if (Metadata == false) {
-            fclose(file);
+            close_file(databasename, tablename, file);
             return buffer;
         } else {
             free(buffer);
@@ -87,32 +90,32 @@ char* ReadTable(const char* databasename, const char* tablename, bool Metadata){
 
         SetHeader MetaHeader;
         if (fread(&MetaHeader, HEADERSIZE, 1, file) != 1) {
-            fclose(file);
+            close_file(databasename, tablename, file);
             perror("Error reading metadata header");
             return NULL;
         }
 
         if (MetaHeader.datasize <= 0) {
-            fclose(file);
+            close_file(databasename, tablename, file);
             perror("Invalid metadata size");
             return NULL;
         }
 
         buffer = (char*)calloc(MetaHeader.datasize+1, sizeof(char));
         if (buffer == NULL) {
-            fclose(file);
+            close_file(databasename, tablename, file);
             perror("Memory allocation failed");
             return NULL;
         }
 
         if (fread(buffer, 1, MetaHeader.datasize, file) != MetaHeader.datasize) {
             free(buffer);
-            fclose(file);
+            close_file(databasename, tablename, file);
             perror("Error reading metadata");
             return NULL;
         }
 
-        fclose(file);
+        close_file(databasename, tablename, file);
         return buffer;
     } else {
         perror("Table does not exist");
@@ -121,9 +124,9 @@ char* ReadTable(const char* databasename, const char* tablename, bool Metadata){
 }
 
 // D: Delete (Being written before update for simplicity)
-void DeleteTable(const char* databasename, const char* tablename){
+void DeleteTable(PATH databasename, const char* tablename){
     // If the table exists, delete the table
-    const char* path = catpath(databasename, tablename);
+    const char* path = catpath(catpath(databasename, "/"), tablename);
     if (CheckDataSet(path) && remove(path) != 0){
         perror("Could not delete the table");
         exit(EXIT_FAILURE);
@@ -131,7 +134,7 @@ void DeleteTable(const char* databasename, const char* tablename){
 }
 
 // U: Update
-void UpdateTable(const char* databasename, const char* tablename, const char* data){
+void UpdateTable(PATH databasename, const char* tablename, const char* data){
     /*Reads the metadata from the table, deletes the table,
     creates a new table with the new data and adds the metadata*/ 
     char* metadata = ReadTable(databasename, tablename, true);
@@ -141,7 +144,7 @@ void UpdateTable(const char* databasename, const char* tablename, const char* da
     free(metadata); // Free the memory allocated to metadata
 }
 
-void UpdateMetaTable(const char* databasename, const char* tablename, const char* metadata){
+void UpdateMetaTable(PATH databasename, const char* tablename, const char* metadata){
     char* data = ReadTable(databasename, tablename, false);
     DeleteTable(databasename, tablename);
     CreateTable(databasename, tablename, data);
