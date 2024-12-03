@@ -10,6 +10,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef PATH_MAX
+    #define PATH_MAX 4096
+#endif
+
 typedef EVP_PKEY *KEY;
 typedef uint8_t *KEY_t;
 typedef char *PATH;

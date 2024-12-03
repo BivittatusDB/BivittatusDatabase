@@ -1,6 +1,6 @@
-#include "base.h"
 #include <string.h>
 #include <stdbool.h>
+#include "base.h"
 
 // CRUD OPERATIONS FOR DATABASE
 // C: Create
@@ -12,23 +12,23 @@ void CreateDatabase(PATH databasename){
     ensure_shared_key(pub, databasename);
 }
 
-void CreateTable(PATH databasename, const char* tablename, const char* data){
+void CreateTable(PATH databasename, PATH tablename, const char* data){
     // If the table does not exist, create a new table in the database.
     if (CheckDataSet(catpath(databasename, tablename))==false){
         // Prepare the table header
         SetHeader header;
         snprintf(header.tablename, sizeof(header.tablename), "%s", tablename);
         header.datasize=str_len(data);
-
         // Open the table file and write the header and the data
         FILE* file = open_file(databasename, tablename, "wb");
+        if (!file) exit(EXIT_FAILURE);
         fwrite(&header, HEADERSIZE, 1, file);
         fwrite(data, 1, header.datasize, file);
         close_file(databasename,tablename, file);
     }
 }
 
-void AddMetaData(PATH databasename, const char* tablename, const char* metadata){
+void AddMetaData(PATH databasename, PATH tablename, const char* metadata){
     // If the table exists, add metadata to the table
     if (CheckDataSet(catpath(databasename, tablename))==true){
         // Prepare the metadata header
@@ -45,7 +45,7 @@ void AddMetaData(PATH databasename, const char* tablename, const char* metadata)
 }
 
 // R: Read
-char* ReadTable(PATH databasename, const char* tablename, bool Metadata){
+char* ReadTable(PATH databasename, PATH tablename, bool Metadata){
     // If the table exists, reads the data or metadata from the table.
     if (CheckDataSet(catpath(databasename, tablename))==true){
         FILE* file = open_file(databasename, tablename, "rb");
@@ -124,7 +124,7 @@ char* ReadTable(PATH databasename, const char* tablename, bool Metadata){
 }
 
 // D: Delete (Being written before update for simplicity)
-void DeleteTable(PATH databasename, const char* tablename){
+void DeleteTable(PATH databasename, PATH tablename){
     // If the table exists, delete the table
     const char* path = catpath(catpath(databasename, "/"), tablename);
     if (CheckDataSet(path) && remove(path) != 0){
@@ -134,7 +134,7 @@ void DeleteTable(PATH databasename, const char* tablename){
 }
 
 // U: Update
-void UpdateTable(PATH databasename, const char* tablename, const char* data){
+void UpdateTable(PATH databasename, PATH tablename, const char* data){
     /*Reads the metadata from the table, deletes the table,
     creates a new table with the new data and adds the metadata*/ 
     char* metadata = ReadTable(databasename, tablename, true);
@@ -144,7 +144,7 @@ void UpdateTable(PATH databasename, const char* tablename, const char* data){
     free(metadata); // Free the memory allocated to metadata
 }
 
-void UpdateMetaTable(PATH databasename, const char* tablename, const char* metadata){
+void UpdateMetaTable(PATH databasename, PATH tablename, const char* metadata){
     char* data = ReadTable(databasename, tablename, false);
     DeleteTable(databasename, tablename);
     CreateTable(databasename, tablename, data);

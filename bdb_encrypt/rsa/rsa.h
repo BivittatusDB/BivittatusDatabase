@@ -3,9 +3,15 @@
 
 #include "types.h"
 
-PATH catpath(PATH path1, PATH path2){
-    PATH full_path = (PATH )malloc(PATH_MAX);
-    snprintf(full_path, PATH_MAX, "%s%s", path1, path2);
+PATH catpath(PATH path1, PATH path2) {
+    PATH full_path = (PATH)malloc(PATH_MAX);
+
+    if (path1[OPENSSL_strnlen(path1, PATH_MAX) - 1] == '/') {
+        snprintf(full_path, PATH_MAX, "%s%s", path1, path2);
+    } else {
+        snprintf(full_path, PATH_MAX, "%s/%s", path1, path2);
+    }
+
     return full_path;
 }
 

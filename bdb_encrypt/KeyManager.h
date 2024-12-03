@@ -64,7 +64,6 @@ bool sym_key_exists(PATH dir){
     PATH filepath = catpath(dir, SYMKEY_FILE);
     FILE *file =fopen(filepath, "r");
     if (!file) {
-        fclose(file);
         return false;
     }
     fclose(file);
@@ -72,7 +71,7 @@ bool sym_key_exists(PATH dir){
 }
 
 int gen_keys(PATH dir){
-    if (sym_key_exists(dir)){
+    if (sym_key_exists(dir)!=false){
         remove(catpath(dir, SYMKEY_FILE));
     }
     KEY keys = gen_key();
